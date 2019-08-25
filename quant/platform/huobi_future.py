@@ -31,7 +31,7 @@ from quant.asset import Asset, AssetSubscribe
 from quant.utils.http_client import AsyncHttpRequests
 from quant.utils.decorator import async_method_locker
 from quant.order import ORDER_ACTION_BUY, ORDER_ACTION_SELL
-from quant.order import ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET
+from quant.order import ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET, ORDER_TYPE_MAKER
 from quant.order import ORDER_STATUS_SUBMITTED, ORDER_STATUS_PARTIAL_FILLED, ORDER_STATUS_FILLED, \
     ORDER_STATUS_CANCELED, ORDER_STATUS_FAILED, TRADE_TYPE_BUY_OPEN, TRADE_TYPE_SELL_OPEN, TRADE_TYPE_BUY_CLOSE, \
     TRADE_TYPE_SELL_CLOSE
@@ -583,6 +583,8 @@ class HuobiFutureTrade:
             order_price_type = "limit"
         elif order_type == ORDER_TYPE_MARKET:
             order_price_type = "opponent"
+        elif order_type == ORDER_TYPE_MAKER:
+            order_price_type = "post_only"
         else:
             return None, "order type error"
 
