@@ -171,11 +171,12 @@ class EventHeartbeat(Event):
         name = "EVENT_HEARTBEAT"
         exchange = "Heartbeat"
         queue = "{server_id}.{exchange}".format(server_id=server_id, exchange=exchange)
+        routing_key = "{server_id}".format(server_id=server_id)
         data = {
             "server_id": server_id,
             "count": count
         }
-        super(EventHeartbeat, self).__init__(name, exchange, queue, data=data)
+        super(EventHeartbeat, self).__init__(name, exchange, queue, routing_key, data=data)
 
     def parse(self):
         return self._data
@@ -188,7 +189,7 @@ class EventAsset(Event):
         platform: Exchange platform name, e.g. bitmex.
         account: Trading account name, e.g. test@gmail.com.
         assets: Asset details.
-        timestamp: Publish time, microsecond.
+        timestamp: Publish time, millisecond.
         update: If any update in this publish.
 
     * NOTE:
@@ -234,8 +235,8 @@ class EventOrder(Event):
         status: Order status.
         avg_price: Average price that filled.
         order_type: Order type, only for future order.
-        ctime: Order create time, microsecond.
-        utime: Order update time, microsecond.
+        ctime: Order create time, millisecond.
+        utime: Order update time, millisecond.
 
     * NOTE:
         Publisher: Strategy Server.
@@ -289,7 +290,7 @@ class EventKline(Event):
         low: Lowest price.
         close: Close price.
         volume: Trade volume.
-        timestamp: Publish time, microsecond.
+        timestamp: Publish time, millisecond.
         kline_type: Kline type, kline/kline_5min/kline_15min.
 
     * NOTE:
@@ -342,7 +343,7 @@ class EventOrderbook(Event):
         symbol: Trading pair, e.g. BTC/USD.
         asks: Asks, e.g. [[price, quantity], ... ]
         bids: Bids, e.g. [[price, quantity], ... ]
-        timestamp: Publish time, microsecond.
+        timestamp: Publish time, millisecond.
 
     * NOTE:
         Publisher: Market server.
@@ -380,7 +381,7 @@ class EventTrade(Event):
         action: Trading side, BUY or SELL.
         price: Order price.
         quantity: Order size.
-        timestamp: Publish time, microsecond.
+        timestamp: Publish time, millisecond.
 
     * NOTE:
         Publisher: Market server.
@@ -470,7 +471,7 @@ class EventCenter:
         # Create a connection.
         try:
             transport, protocol = await aioamqp.connect(host=self._host, port=self._port, login=self._username,
-                                                        password=self._password)
+                                                        password=self._password, login_method="PLAIN")
         except Exception as e:
             logger.error("connection error:", e, caller=self)
             return
