@@ -158,6 +158,23 @@ class HuobiRestAPI:
         success, error = await self.request("GET", uri)
         return success, error
 
+    async def transfer_between_spot_future(self, symbol, amount, type_s):
+        """ transfer asset between spot and future
+        
+        Args:
+            symbol: Currency name, e.g. BTC.
+            amount: transfer amount.
+            type_s: "futures-to-pro" or "pro-to-futures"
+        """
+        uri = "/v1/futures/transfer"
+        body = {
+            "currency": symbol,
+            "amount": amount,
+            "type": type_s
+        }
+        success, error = await self.request("POST", uri, body=body)
+        return success, error
+
     async def request(self, method, uri, params=None, body=None):
         """ 发起请求
         @param method 请求方法 GET POST
@@ -438,6 +455,15 @@ class HuobiTrade(Websocket):
             for order_info in success:
                 order_nos.append(order_info["id"])
             return order_nos, None
+
+    async def transfer_between_spot_future(self, amount, type_s='pro-to-futures'):
+        """ 现货与期货之间资产划转
+        """
+        success, error = await self._rest_api.transfer_between_spot_future(self._raw_symbol, amount, type_s)
+        if error:
+            return [], error
+        else:
+            return success, None
 
     def _update_order(self, order_info):
         """ 更新订单信息
