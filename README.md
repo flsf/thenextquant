@@ -37,6 +37,11 @@ or
 pip install -e git+https://github.com/TheNextQuant/thenextquant.git#egg=thenextquant
 ```
 
+or
+```text
+pip install . --ignore-installed
+```
+
 ### Demo使用示例
 
 - 推荐创建如下结构的文件及文件夹:
