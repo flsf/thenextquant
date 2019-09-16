@@ -41,7 +41,7 @@ __all__ = ("HuobiFutureRestAPI", "HuobiFutureTrade", )
 
 
 class HuobiFutureRestAPI:
-    """ OKEx Swap REST API client.
+    """ Huobi Swap REST API client.
 
     Attributes:
         host: HTTP request host.
@@ -392,8 +392,6 @@ class HuobiFutureTrade:
             e = Error("param symbol miss")
         if not kwargs.get("contract_type"):
             e = Error("param contract_type miss")
-        if not kwargs.get("contract_code"):
-            e = Error("param contract_code miss")
         if not kwargs.get("host"):
             kwargs["host"] = "https://api.hbdm.com"
         if not kwargs.get("wss"):
@@ -413,7 +411,6 @@ class HuobiFutureTrade:
         self._platform = HUOBI_FUTURE
         self._symbol = kwargs["symbol"]
         self._contract_type = kwargs["contract_type"]
-        self._contract_code = kwargs["contract_code"]
         self._host = kwargs["host"]
         self._wss = kwargs["wss"]
         self._access_key = kwargs["access_key"]
@@ -429,7 +426,7 @@ class HuobiFutureTrade:
 
         self._assets = {}  # Asset detail, {"BTC": {"free": "1.1", "locked": "2.2", "total": "3.3"}, ... }.
         self._orders = {}  # Order objects, {"order_id": order, ...}.
-        self._position = Position(self._platform, self._account, self._strategy, self._contract_code)
+        self._position = Position(self._platform, self._account, self._strategy, self._symbol + '/' + self._contract_type)
 
         self._order_channel = "orders.{symbol}".format(symbol=self._symbol.lower())
         self._position_channel = "positions.{symbol}".format(symbol=self._symbol.lower())
@@ -589,7 +586,7 @@ class HuobiFutureTrade:
             return None, "order type error"
 
         quantity = abs(int(quantity))
-        result, error = await self._rest_api.create_order(self._symbol, self._contract_type, self._contract_code,
+        result, error = await self._rest_api.create_order(self._symbol, self._contract_type, '',
                                                           price, quantity, direction, offset, lever_rate,
                                                           order_price_type)
         if error:
@@ -609,7 +606,7 @@ class HuobiFutureTrade:
         """
         # If len(order_nos) == 0, you will cancel all orders for this symbol(initialized in Trade object).
         if len(order_nos) == 0:
-            success, error = await self._rest_api.revoke_order_all(self._symbol, self._contract_code, self._contract_type)
+            success, error = await self._rest_api.revoke_order_all(self._symbol, '', self._contract_type)
             if error:
                 return False, error
             if success.get("errors"):
@@ -651,7 +648,7 @@ class HuobiFutureTrade:
         else:
             order_nos = []
             for order_info in success["data"]["orders"]:
-                if order_info["contract_code"] != self._contract_code:
+                if order_info["contract_type"] != self._contract_type and order_info["symbol"] != self._symbol:
                     continue
                 order_nos.append(str(order_info["order_id"]))
             return order_nos, None
@@ -662,7 +659,7 @@ class HuobiFutureTrade:
         Args:
             order_info: Order information.
         """
-        if order_info["contract_code"] != self._contract_code:
+        if order_info["contract_type"] != self._contract_type and order_info["symbol"] != self._symbol:
             return
         order_no = str(order_info["order_id"])
         status = order_info["status"]
@@ -686,7 +683,7 @@ class HuobiFutureTrade:
                 "strategy": self._strategy,
                 "order_no": order_no,
                 "action": ORDER_ACTION_BUY if order_info["direction"] == "buy" else ORDER_ACTION_SELL,
-                "symbol": self._contract_code,
+                "symbol": self._symbol + '/' + self._contract_type,
                 "price": order_info["price"],
                 "quantity": order_info["volume"],
                 "trade_type": trade_type
@@ -727,7 +724,7 @@ class HuobiFutureTrade:
             None.
         """
         for position_info in data["data"]:
-            if position_info["contract_code"] != self._contract_code:
+            if position_info["contract_type"] != self._contract_type and position_info["symbol"] != self._symbol:
                 return
             if position_info["direction"] == "buy":
                 self._position.long_quantity = int(position_info["volume"])
