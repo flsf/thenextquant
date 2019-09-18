@@ -3,9 +3,10 @@
 """
 工具包
 
-Author: HuangTao
+Author: QiaoXiaofeng
 Date:   2018/04/28
 Update: 2018/09/07 1. 增加函数datetime_to_timestamp;
+        2019/09/18 2. 增加函数来处理浮点数截取不四舍五入noround_float
 """
 
 import uuid
@@ -187,3 +188,11 @@ def float_to_str(f, p=20):
     ctx = decimal.Context(p)
     d1 = ctx.create_decimal(repr(f))
     return format(d1, 'f')
+
+def noround_float(f, n):
+    """ Get the given n digit float to the string, without rounding up or rounding down.
+    """
+    f_str = str(f)
+    a, b, c = f_str.partition('.')
+    c = (c+"0"*n)[:n]
+    return ".".join([a, c]
