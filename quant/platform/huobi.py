@@ -456,15 +456,6 @@ class HuobiTrade(Websocket):
                 order_nos.append(order_info["id"])
             return order_nos, None
 
-    async def transfer_between_spot_future(self, amount, type_s='pro-to-futures'):
-        """ 现货与期货之间资产划转
-        """
-        success, error = await self._rest_api.transfer_between_spot_future(self._raw_symbol, amount, type_s)
-        if error:
-            return [], error
-        else:
-            return success, None
-
     def _update_order(self, order_info):
         """ 更新订单信息
         @param order_info 订单信息
