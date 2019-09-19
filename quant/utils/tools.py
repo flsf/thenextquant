@@ -195,4 +195,13 @@ def noround_float(f, n):
     f_str = str(f)
     a, b, c = f_str.partition('.')
     c = (c+"0"*n)[:n]
-    return float(".".join([a, c]))
+    return ".".join([a, c])
+
+def decimal_digit(digit):
+    """ Get the Decimal n digit present for Decimal.
+    """
+    f_str = '0.'
+    for i in range(digit):
+        f_str += '0'
+    return f_str
+
