@@ -195,4 +195,4 @@ def noround_float(f, n):
     f_str = str(f)
     a, b, c = f_str.partition('.')
     c = (c+"0"*n)[:n]
-    return ".".join([a, c]
+    return float(".".join([a, c]))
