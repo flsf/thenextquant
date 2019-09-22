@@ -106,12 +106,12 @@ def retry(max_retries: int =5, delay: (int, float) =0, step: (int, float) =0,
             func_ex = StopRetry
             while max_retries > 0:
                 try:
-                    result = await func(*args, **kwargs)
+                    success, error = await func(*args, **kwargs)
                     # 验证函数返回False时，表示告知装饰器验证不通过，继续重试
-                    if callable(validate) and validate(result) is False:
+                    if callable(validate) and validate(error) is False:
                         continue
                     else:
-                        return result
+                        return success, error
                 except exceptions as ex:
                     func_ex = ex
                     # 回调函数返回True时，表示告知装饰器异常已经处理，终止重试

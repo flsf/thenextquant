@@ -307,7 +307,8 @@ class HuobiTrade(Websocket):
             "SignatureVersion": "2",
             "Timestamp": timestamp
         }
-        signature = self._rest_api.generate_signature("GET", params, "api.huobi.pro", "/ws/v1")
+        netloc = parse.urlparse(self._wss).netloc
+        signature = self._rest_api.generate_signature("GET", params, netloc, "/ws/v1")
         params["op"] = "auth"
         params["Signature"] = signature
         await self.ws.send_json(params)
@@ -410,8 +411,8 @@ class HuobiTrade(Websocket):
         else:
             logger.error("action error! action:", action, caller=self)
             return None, "action error"
-        price = tools.float_to_str(price)
-        quantity = tools.float_to_str(quantity)
+        #price = str(price)
+        #quantity = str(quantity)
         result, error = await self._rest_api.create_order(self._raw_symbol, price, quantity, t)
         return result, error
 
