@@ -82,7 +82,7 @@ trader = Trade(strategy_name, platform, symbol, account=account, access_key=acce
 - 如果需要实时获取到账户的资产变化情况，那么可以在初始化的时候指定资产更新回调函数
 ```python
 
-# 当委资产有任何变化，将通过此函数回调变化信息，asset为订单对象(注意: 因为资产可能变化频繁，所以一般10秒钟推送一次更新回调)
+# 当资产有任何变化，将通过此函数回调变化信息，asset为资产对象(注意: 因为资产可能变化频繁，所以一般10秒钟推送一次更新回调)
 async def on_event_asset_update(asset):
     print("asset update:", asset)
 
@@ -186,7 +186,7 @@ async def get_open_order_nos(self):
 
 #### 1.7 获取当前的持仓对象
 
-`Trade.position` 可以提取当前 `Trade` 模块里的持仓信息，即 `Positin` 对象，但仅限合约使用。
+`Trade.position` 可以提取当前 `Trade` 模块里的持仓信息，即 `Position` 对象，但仅限合约使用。
 
 
 ### 2. 资产模块
@@ -278,7 +278,7 @@ o.utime  # 交易所订单更新时间
 
 ### 4. 持仓模块
 
-所有持仓相关的对象在框架的 `quant.posotion` 模块下，`Trade` 模块在推送持仓信息回调的时候，携带的 `position` 参数即此模块。
+所有持仓相关的对象在框架的 `quant.position` 模块下，`Trade` 模块在推送持仓信息回调的时候，携带的 `position` 参数即此模块。
 
 #### 4.1 持仓对象
 

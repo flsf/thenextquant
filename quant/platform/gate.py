@@ -462,6 +462,10 @@ class GateTrade:
             status_updated = True
         elif state == "cancelled":
             order.status = ORDER_STATUS_CANCELED
+            filled_amount = float(order_info["filledAmount"])
+            remain = float(order.quantity) - filled_amount
+            if order.remain != remain:
+                order.remain = remain
             status_updated = True
         else:
             logger.warn("state error! order_info:", order_info, caller=self)

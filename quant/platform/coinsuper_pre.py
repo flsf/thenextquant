@@ -548,6 +548,12 @@ class CoinsuperPreTrade:
             status_updated = True
         elif state == "CANCEL":
             order.status = ORDER_STATUS_CANCELED
+            if order.order_type == ORDER_TYPE_LIMIT:
+                if float(order.remain) != float(order_info["quantityRemaining"]):
+                    order.remain = float(order_info["quantityRemaining"])
+            else:
+                if float(order.remain) != float(order_info["amountRemaining"]):
+                    order.remain = float(order_info["amountRemaining"])
             status_updated = True
         else:
             logger.warn("state error! order_info:", order_info, caller=self)
