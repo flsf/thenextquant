@@ -648,7 +648,7 @@ class HuobiFutureTrade:
         else:
             order_nos = []
             for order_info in success["data"]["orders"]:
-                if order_info["contract_type"] != self._contract_type and order_info["symbol"] != self._symbol:
+                if order_info["contract_type"] != self._contract_type or order_info["symbol"] != self._symbol:
                     continue
                 order_nos.append(str(order_info["order_id"]))
             return order_nos, None
@@ -659,7 +659,7 @@ class HuobiFutureTrade:
         Args:
             order_info: Order information.
         """
-        if order_info["contract_type"] != self._contract_type and order_info["symbol"] != self._symbol:
+        if order_info["contract_type"] != self._contract_type or order_info["symbol"] != self._symbol:
             return
         order_no = str(order_info["order_id"])
         status = order_info["status"]
@@ -725,7 +725,7 @@ class HuobiFutureTrade:
             None.
         """
         for position_info in data["data"]:
-            if position_info["contract_type"] != self._contract_type and position_info["symbol"] != self._symbol:
+            if position_info["contract_type"] != self._contract_type or position_info["symbol"] != self._symbol:
                 return
             if position_info["direction"] == "buy":
                 self._position.long_quantity = int(position_info["volume"])
