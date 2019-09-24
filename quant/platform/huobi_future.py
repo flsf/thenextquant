@@ -726,7 +726,7 @@ class HuobiFutureTrade:
         """
         for position_info in data["data"]:
             if position_info["contract_type"] != self._contract_type or position_info["symbol"] != self._symbol:
-                return
+                continue
             if position_info["direction"] == "buy":
                 self._position.long_quantity = int(position_info["volume"])
                 self._position.long_avg_price = position_info["cost_hold"]
