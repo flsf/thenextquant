@@ -187,6 +187,24 @@ class HuobiFutureRestAPI:
         }
         success, error = await self.request("POST", uri, body=body, auth=True)
         return success, error
+    
+    async def create_orders(self, orders_data):
+        """ Batch Create orders.
+            orders_data = {'orders_data': [
+               {'symbol': 'BTC', 'contract_type': 'quarter',  
+                'contract_code':'BTC181228',  'client_order_id':'', 
+                'price':1, 'volume':1, 'direction':'buy', 'offset':'open', 
+                'leverRate':20, 'orderPriceType':'limit'},
+               {'symbol': 'BTC','contract_type': 'quarter', 
+                'contract_code':'BTC181228', 'client_order_id':'', 
+                'price':2, 'volume':2, 'direction':'buy', 'offset':'open', 
+                'leverRate':20, 'orderPriceType':'limit'}]}   
+        """
+        uri = "/api/v1/contract_batchorder"
+        body = orders_data
+        success, error = await self.request("POST", uri, body=body, auth=True)
+        return success, error
+        
 
     async def revoke_order(self, symbol, order_id):
         """ Revoke an order.
@@ -592,7 +610,67 @@ class HuobiFutureTrade:
         if error:
             return None, error
         return str(result["data"]["order_id"]), None
+    
+    async def create_orders(self, orders, *args, **kwargs):
+        """ batch create orders
+        
+        Args:
+            orders_data: [] 
+            list item:
+                action: Trade direction, BUY or SELL.
+                price: Price of each contract.
+                quantity: The buying or selling quantity.
+                order_type: Order type, LIMIT or MARKET.
+                lever_rate: leverage.
+            kwargs:
+                
+        Returns:
+            success: order info  if created successfully.
+            error: erros information.
+        """
+        orders_data = []
+        for order in orders:
+            if int(order["quantity"]) > 0:
+                if order["action"] == ORDER_ACTION_BUY:
+                    direction = "buy"
+                    offset = "open"
+                elif order["action"] == ORDER_ACTION_SELL:
+                    direction = "sell"
+                    offset = "close"
+                else:
+                    return None, "action error"
+            else:
+                if order["action"] == ORDER_ACTION_BUY:
+                    direction = "buy"
+                    offset = "close"
+                elif order["action"] == ORDER_ACTION_SELL:
+                    direction = "sell"
+                    offset = "open"
+                else:
+                    return None, "action error"
 
+            lever_rate = order["lever_rate"]
+            if order["order_type"] == ORDER_TYPE_LIMIT:
+                order_price_type = "limit"
+            elif order["order_type"] == ORDER_TYPE_MARKET:
+                order_price_type = "opponent"
+            elif order["order_type"] == ORDER_TYPE_MAKER:
+                order_price_type = "post_only"
+            else:
+                return None, "order type error"
+
+            quantity = abs(int(order["quantity"]))
+
+            orders_data.append({"symbol": self._symbol, "contract_type": self._contract_type, "contract_code": "", \
+                    "client_order_id": "", "price": order["price"], "volume": quantity, "direction": direction, "offset": offset, \
+                    "leverRate": lever_rate, "orderPriceType":  order_price_type})
+
+        result, error = await self._rest_api.create_orders({"orders_data": orders_data})
+        if error:
+            return None, error
+        order_nos = [ order["order_id"] for order in result.get("data").get("success")]
+        return order_nos, result.get("data").get("errors")
+        
     async def revoke_order(self, *order_nos):
         """ Revoke (an) order(s).
 

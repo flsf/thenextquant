@@ -134,6 +134,17 @@ class Trade:
         """
         order_no, error = await self._t.create_order(action, price, quantity, order_type, **kwargs)
         return order_no, error
+    
+    async def create_orders(self, orders_data, **kwargs):
+        """ Create batch order
+
+        Returns:
+            orders_no:
+            error: error information.
+        """
+        order_nos, error = await self._t.create_orders(orders_data, **kwargs)
+        return order_nos, error
+
 
     async def revoke_order(self, *order_nos):
         """ Revoke (an) order(s).
