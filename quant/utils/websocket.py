@@ -8,6 +8,7 @@ Date:   2018/06/29
 """
 
 import json
+import traceback
 import aiohttp
 import asyncio
 
@@ -82,9 +83,15 @@ class Websocket:
             elif msg.type == aiohttp.WSMsgType.CLOSED:
                 logger.warn("receive event CLOSED:", msg, caller=self)
                 await asyncio.get_event_loop().create_task(self._reconnect())
-                return
+            elif msg.type == aiohttp.WSMsgType.CLOSE:
+                logger.warn("receive event CLOSE:", msg, caller=self)
+                await asyncio.get_event_loop().create_task(self._reconnect())
+            elif msg.type == aiohttp.WSMsgType.CLOSING:
+                logger.warn("receive event CLOSING:", msg, caller=self)
+                await asyncio.get_event_loop().create_task(self._reconnect())
             elif msg.type == aiohttp.WSMsgType.ERROR:
                 logger.error("receive event ERROR:", msg, caller=self)
+                await asyncio.get_event_loop().create_task(self._reconnect())
             else:
                 logger.warn("unhandled msg:", msg, caller=self)
 
@@ -118,11 +125,16 @@ class Websocket:
             logger.warn("websocket connection not connected yet!", caller=self)
             return
         if self.heartbeat_msg:
-            if isinstance(self.heartbeat_msg, dict):
-                await self.ws.send_json(self.heartbeat_msg)
-            elif isinstance(self.heartbeat_msg, str):
-                await self.ws.send_str(self.heartbeat_msg)
-            else:
-                logger.error("send heartbeat msg failed! heartbeat msg:", self.heartbeat_msg, caller=self)
-                return
-            logger.debug("send ping message:", self.heartbeat_msg, caller=self)
+            try:
+                if isinstance(self.heartbeat_msg, dict):
+                    await self.ws.send_json(self.heartbeat_msg)
+                elif isinstance(self.heartbeat_msg, str):
+                    await self.ws.send_str(self.heartbeat_msg)
+                else:
+                    logger.error("send heartbeat msg failed! heartbeat msg:", self.heartbeat_msg, caller=self)
+                    return
+                logger.debug("send ping message:", self.heartbeat_msg, caller=self)
+            except ConnectionResetError:
+                traceback.print_exc()
+                await asyncio.get_event_loop().create_task(self._reconnect())
+
