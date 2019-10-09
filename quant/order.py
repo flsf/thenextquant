@@ -89,3 +89,25 @@ class Order:
 
     def __repr__(self):
         return str(self)
+
+
+class OrderSubscribe:
+    """ Subscribe Order.
+
+    Args:
+        platform: Exchange platform name, e.g. binance/bitmex.
+        account: Trade account name, e.g. test@gmail.com.
+        strategy: Trade strategy name, e.g. huobi_test_strategy
+        callback: Asynchronous callback function for market data update.
+                e.g. async def on_event_account_update(asset: Asset):
+                        pass
+    """
+
+    def __init__(self, platform, account, strategy, callback):
+        """ Initialize. """
+        if platform == "#" or account == "#":
+            multi = True
+        else:
+            multi = False
+        from quant.event import EventOrder
+        EventOrder(platform, account, strategy).subscribe(callback, multi)
