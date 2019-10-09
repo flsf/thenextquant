@@ -81,6 +81,8 @@ class Trade:
             from quant.platform.bitmex import BitmexTrade as T
         elif platform == const.BINANCE:
             from quant.platform.binance import BinanceTrade as T
+        elif platform == const.BINANCE_FUTURE:
+            from quant.platform.binance_future import BinanceFutureTrade as T
         elif platform == const.HUOBI:
             from quant.platform.huobi import HuobiTrade as T
         elif platform == const.COINSUPER:

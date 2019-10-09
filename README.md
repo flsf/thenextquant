@@ -82,6 +82,7 @@ python src/main.py config.json
 - [资产](docs/asset.md)
 - 当前支持交易所
     - [Binance 币币](example/binance)
+    - [Binance 合约](example/binance_future)
     - [OKEx 币币](example/okex)
     - [OKEx Margin 杠杆](example/okex_margin)
     - [OKEx Future 交割合约](example/okex_future)

@@ -1,6 +1,13 @@
 # Change Logs
 
 
+### v0.2.1
+
+*Date: 2019/10/09*  
+*Summary:*
+- Add [Binance Future](../example/binance_future) Trade module.
+
+
 ### v0.2.0
 
 *Date: 2019/10/04*  

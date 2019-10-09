@@ -12,6 +12,7 @@ Email:  huangtao@ifclover.com
 # Exchange Names
 BITFINEX = "bitfinex"
 BINANCE = "binance"  # Binance https://www.binance.com
+BINANCE_FUTURE = "binance_future"  # https://www.binance-cn.com/cn/futures/BTCUSDT
 OKEX = "okex"  # OKEx SPOT https://www.okex.me/spot/trade
 OKEX_MARGIN = "okex_margin"  # OKEx MARGIN https://www.okex.me/spot/marginTrade
 OKEX_FUTURE = "okex_future"  # OKEx FUTURE https://www.okex.me/future/trade
