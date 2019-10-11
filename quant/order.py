@@ -105,7 +105,7 @@ class OrderSubscribe:
 
     def __init__(self, platform, account, strategy, callback):
         """ Initialize. """
-        if platform == "#" or account == "#":
+        if platform == "#" or account == "#" or strategy == "#":
             multi = True
         else:
             multi = False
