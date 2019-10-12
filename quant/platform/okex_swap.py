@@ -30,7 +30,7 @@ from quant.utils.websocket import Websocket
 from quant.asset import Asset, AssetSubscribe
 from quant.utils.http_client import AsyncHttpRequests
 from quant.utils.decorator import async_method_locker
-from quant.order import ORDER_ACTION_BUY, ORDER_ACTION_SELL, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET
+from quant.order import ORDER_ACTION_BUY, ORDER_ACTION_SELL, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET, ORDER_TYPE_MAKER
 from quant.order import ORDER_STATUS_SUBMITTED, ORDER_STATUS_PARTIAL_FILLED, ORDER_STATUS_FILLED, \
     ORDER_STATUS_CANCELED, ORDER_STATUS_FAILED
 
@@ -470,6 +470,8 @@ class OKExSwapTrade(Websocket):
             order_type_2 = 0
         elif order_type == ORDER_TYPE_MARKET:
             order_type_2 = 2
+        elif order_type == ORDER_TYPE_MAKER:
+            order_type_2 = 1
         else:
             return None, "order type error"
         result, error = await self._rest_api.create_order(self._symbol, trade_type, price, quantity, match_price,

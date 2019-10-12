@@ -31,7 +31,7 @@ from quant.asset import Asset, AssetSubscribe
 from quant.utils.http_client import AsyncHttpRequests
 from quant.utils.decorator import async_method_locker
 from quant.order import ORDER_ACTION_BUY, ORDER_ACTION_SELL
-from quant.order import ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET
+from quant.order import ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET, ORDER_TYPE_MAKER
 from quant.order import ORDER_STATUS_SUBMITTED, ORDER_STATUS_PARTIAL_FILLED, ORDER_STATUS_FILLED, \
     ORDER_STATUS_CANCELED, ORDER_STATUS_FAILED
 
@@ -79,11 +79,12 @@ class OKExFutureRestAPI:
         success, error = await self.request("GET", uri, auth=True)
         return success, error
 
-    async def create_order(self, instrument_id, trade_type, price, size, match_price=0, leverage=20):
+    async def create_order(self, instrument_id, trade_type, price, size, match_price=0, order_type=0, leverage=20):
         """ Create an order.
         Args:
             instrument_id: Contract ID, e.g. BTC-USD-180213.
             trade_type: Trade type, 1: open long, 2: open short, 3: close long, 4: close short.
+            order_type: Market,Maker,etc
             price: Price of each contract.
             size: The buying or selling quantity.
             match_price: Order at best counter party price? (0: no, 1: yes), When posting orders at best bid price,
@@ -98,6 +99,7 @@ class OKExFutureRestAPI:
         body = {
             "instrument_id": instrument_id,
             "type": str(trade_type),
+            "order_type": str(order_type),
             "price": price,
             "size": size,
             "match_price": match_price,
@@ -431,7 +433,7 @@ class OKExFutureTrade(Websocket):
             for data in msg["data"]:
                 self._update_position(data)
 
-    async def create_order(self, action, price, quantity, order_type=ORDER_TYPE_LIMIT, *args, **kwargs):
+    async def create_order(self, action, price, quantity, order_type=ORDER_TYPE_LIMIT,  match_price=0, *args, **kwargs):
         """ Create an order.
 
         Args:
@@ -455,7 +457,15 @@ class OKExFutureTrade(Websocket):
             else:
                 trade_type = "2"
         quantity = abs(int(quantity))
-        result, error = await self._rest_api.create_order(self._symbol, trade_type, price, quantity)
+        if order_type == ORDER_TYPE_LIMIT:
+            order_type_2 = 0
+        elif order_type == ORDER_TYPE_MARKET:
+            order_type_2 = 2
+        elif order_type == ORDER_TYPE_MAKER:
+            order_type_2 = 1
+        else:
+            return None, "order type error"
+        result, error = await self._rest_api.create_order(self._symbol, trade_type, price, quantity, match_price, order_type_2)
         if error:
             return None, error
         return result["order_id"], None
