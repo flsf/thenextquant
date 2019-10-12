@@ -106,6 +106,27 @@ class OKExSwapRestAPI:
         }
         success, error = await self.request("POST", uri, body=body, auth=True)
         return success, error
+    
+    async def create_orders(self, instrument_id, order_data):
+        """ create batch orders
+            args:
+                instrumnet_id: such as BTC-USD-SWAP.
+                order_data: []
+                    list items:
+                        client_oid: client no.
+                        size: volume.
+                        price: price.
+                        type: direction.
+                        match_price: 0 or 1.
+                        order_type: 0: common 1: maker 2: FOK 3: IOC
+        """
+        uri = "/api/swap/v3/orders"
+        body = {
+            "instrument_id": instrument_id,
+            "order_data": order_data
+        }
+        success, error = await self.request("POST", uri, body=body, auth=True)
+        return success, error
 
     async def revoke_order(self, instrument_id, order_id):
         """ Cancelling an unfilled order.
@@ -480,6 +501,45 @@ class OKExSwapTrade(Websocket):
             return None, error
         order_no = result["order_id"]
         return order_no, None
+    
+    async def create_orders(self, orders, *args, **kwargs):
+        """ create batch orders.
+        
+        Args:
+           orders_data: list.
+
+        """
+        orders_data = []
+        for order in orders:
+            if int(order["quantity"]) > 0:
+                if order["action"] == ORDER_ACTION_BUY:
+                    trade_type = "1"
+                else:
+                    trade_type = "3"
+            else:
+                if order["action"] == ORDER_ACTION_BUY:
+                    trade_type = "4"
+                else:
+                    trade_type = "2"
+            quantity = abs(int(order["quantity"]))
+            if order["order_type"] == ORDER_TYPE_LIMIT:
+                order_type_2 = 0
+            elif order["order_type"] == ORDER_TYPE_MARKET:
+                order_type_2 = 2
+            elif order["order_type"] == ORDER_TYPE_MAKER:
+                order_type_2 = 1
+            else:
+                return None, "order type error"
+
+            orders_data.append({"order_type": str(order_type_2), "client_oid": "", "price": order["price"], "size": str(quantity), 
+                                "type": trade_type, "match_price": "0"})
+       
+        result, error = await self._rest_api.create_orders(self._symbol, orders_data)
+        if error:
+            return None, error
+        order_nos = [ order["order_id"] for order in result.get("order_info") if order["error_code"] == "0"]
+        errors = [ order for order in result.get("order_info") if order["error_code"] != "0"]
+        return order_nos, errors
 
     async def revoke_order(self, *order_nos):
         """ Revoke (an) order(s).
