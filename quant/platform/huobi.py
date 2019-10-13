@@ -4,6 +4,8 @@
 huobi 交易模块
 https://huobiapi.github.io/docs/spot/v1/cn
 
+Update: QiaoXiaofeng
+Update Date: 2019/10/11
 Author: HuangTao
 Date:   2018/08/30
 """
@@ -33,6 +35,7 @@ from quant.order import ORDER_ACTION_BUY, ORDER_ACTION_SELL
 from quant.order import ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET
 from quant.order import ORDER_STATUS_SUBMITTED, ORDER_STATUS_PARTIAL_FILLED, ORDER_STATUS_FILLED, \
     ORDER_STATUS_CANCELED, ORDER_STATUS_FAILED
+from quant.event import EventOrder
 
 
 __all__ = ("HuobiRestAPI", "HuobiTrade", )
@@ -513,6 +516,9 @@ class HuobiTrade(Websocket):
             self._orders.pop(order_no)
         if order and self._order_update_callback:
             SingleTask.run(self._order_update_callback, copy.copy(order))
+        # publish order
+        EventOrder(**order).publish()
+        logger.info("symbol:", order.symbol, "order:", order, caller=self)
 
     async def on_event_asset_update(self, asset: Asset):
         """ 资产数据更新回调

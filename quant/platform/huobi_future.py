@@ -4,6 +4,9 @@
 Huobi Future Trade module.
 https://www.hbdm.com/zh-cn/contract/exchange/
 
+Update: QiaoXiaofeng
+Update Date: 2019/10/1
+Email: andyjoe318@gmail.com
 Author: HuangTao
 Date:   2019/08/23
 Email:  huangtao@ifclover.com
@@ -35,6 +38,7 @@ from quant.order import ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET, ORDER_TYPE_MAKER
 from quant.order import ORDER_STATUS_SUBMITTED, ORDER_STATUS_PARTIAL_FILLED, ORDER_STATUS_FILLED, \
     ORDER_STATUS_CANCELED, ORDER_STATUS_FAILED, TRADE_TYPE_BUY_OPEN, TRADE_TYPE_SELL_OPEN, TRADE_TYPE_BUY_CLOSE, \
     TRADE_TYPE_SELL_CLOSE
+from quant.event import EventOrder 
 
 
 __all__ = ("HuobiFutureRestAPI", "HuobiFutureTrade", )
@@ -792,6 +796,10 @@ class HuobiFutureTrade:
         # Delete order that already completed.
         if order.status in [ORDER_STATUS_FAILED, ORDER_STATUS_CANCELED, ORDER_STATUS_FILLED]:
             self._orders.pop(order_no)
+        
+        # publish order
+        EventOrder(**order).publish()
+        logger.info("symbol:", order.symbol, "order:", order, caller=self)
 
     def _update_position(self, data):
         """ Position update.
