@@ -517,7 +517,7 @@ class HuobiTrade(Websocket):
         if order and self._order_update_callback:
             SingleTask.run(self._order_update_callback, copy.copy(order))
         # publish order
-        EventOrder(**order).publish()
+        EventOrder(**order.__dict__).publish()
         logger.info("symbol:", order.symbol, "order:", order, caller=self)
 
     async def on_event_asset_update(self, asset: Asset):

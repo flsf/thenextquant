@@ -798,7 +798,7 @@ class HuobiFutureTrade:
             self._orders.pop(order_no)
         
         # publish order
-        EventOrder(**order).publish()
+        EventOrder(**order.__dict__).publish()
         logger.info("symbol:", order.symbol, "order:", order, caller=self)
 
     def _update_position(self, data):
