@@ -23,6 +23,7 @@ from quant.market import Orderbook, Trade, Kline
 from quant.asset import Asset
 from quant.order import Order
 from quant.position import Position
+from quant.heartbeat import Heartbeat
 
 
 __all__ = ("EventCenter", "EventConfig", "EventHeartbeat", "EventAsset", "EventOrder", "EventKline", "EventOrderbook",
@@ -179,7 +180,8 @@ class EventHeartbeat(Event):
         super(EventHeartbeat, self).__init__(name, exchange, queue, routing_key, data=data)
 
     def parse(self):
-        return self._data
+        heartbeat = Heartbeat(**self.data)
+        return heartbeat
 
 
 class EventAsset(Event):

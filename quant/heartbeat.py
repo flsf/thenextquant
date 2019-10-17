@@ -8,12 +8,13 @@ Date:   2018/04/26
 """
 
 import asyncio
+import json
 
 from quant.utils import tools
 from quant.utils import logger
 from quant.config import config
 
-__all__ = ("heartbeat", )
+__all__ = ("heartbeat", "HeartbeatSubscribe", "Heartbeat")
 
 
 class HeartBeat(object):
@@ -23,8 +24,8 @@ class HeartBeat(object):
     def __init__(self):
         self._count = 0  # 心跳次数
         self._interval = 1  # 服务心跳执行时间间隔(秒)
-        self._print_interval = config.heartbeat.get("interval", 0)  # 心跳打印时间间隔(秒)，0为不打印
-        self._broadcast_interval = config.heartbeat.get("broadcast", 0)  # 心跳广播间隔(秒)，0为不广播
+        self._print_interval = config.heartbeat.get("interval", 60)  # 心跳打印时间间隔(秒)，0为不打印
+        self._broadcast_interval = config.heartbeat.get("broadcast", 10)  # 心跳广播间隔(秒)，0为不广播
         self._tasks = {}  # 跟随心跳执行的回调任务列表，由 self.register 注册 {task_id: {...}}
 
     @property
@@ -89,6 +90,55 @@ class HeartBeat(object):
         """
         from quant.event import EventHeartbeat
         EventHeartbeat(config.server_id, self.count).publish()
+
+class Heartbeat:
+    """ Heartbeat object.
+
+    Args:
+        server_id: server_id.
+        count: heartbeat count.
+    """
+
+    def __init__(self, server_id=None, count=None):
+        """ Initialize. """
+        self.server_id = server_id
+        self.count = count
+
+    @property
+    def data(self):
+        d = {
+            "server_id": self.server_id,
+            "count": self.count,
+        }
+        return d
+
+    def __str__(self):
+        info = json.dumps(self.data)
+        return info
+
+    def __repr__(self):
+        return str(self)
+
+
+class HeartbeatSubscribe:
+    """ Subscribe Heartbeat.
+
+    Args:
+        server_id: server_id.
+        count: heartbeat count.
+        callback: Asynchronous callback function for market data update.
+                e.g. async def on_event_account_update(asset: Asset):
+                        pass
+    """
+
+    def __init__(self, server_id, count, callback):
+        """ Initialize. """
+        if server_id == "#" or count == "#":
+            multi = True
+        else:
+            multi = False
+        from quant.event import EventHeartbeat
+        EventHeartbeat(server_id, count).subscribe(callback, multi)
 
 
 heartbeat = HeartBeat()
