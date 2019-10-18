@@ -21,7 +21,7 @@ setup(
         "marketmaker", "binance", "okex", "huobi", "bitmex", "deribit", "kraken", "gemini", "kucoin"
     ],
     install_requires=[
-        "aiohttp==3.2.1",
+        "aiohttp[speedups]==3.6.2",
         "aioamqp==0.13.0",
         "motor==2.0.0"
     ],
