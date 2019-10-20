@@ -23,7 +23,7 @@ class HeartBeat(object):
 
     def __init__(self):
         self._count = 0  # 心跳次数
-        self._interval = 1  # 服务心跳执行时间间隔(秒)
+        self._interval = 0.005  # 服务心跳执行时间间隔(秒)
         self._print_interval = config.heartbeat.get("interval", 60)  # 心跳打印时间间隔(秒)，0为不打印
         self._broadcast_interval = config.heartbeat.get("broadcast", 10)  # 心跳广播间隔(秒)，0为不广播
         self._tasks = {}  # 跟随心跳执行的回调任务列表，由 self.register 注册 {task_id: {...}}
@@ -33,13 +33,13 @@ class HeartBeat(object):
         return self._count
 
     def ticker(self):
-        """ 启动心跳， 每秒执行一次
+        """ 启动心跳， 每interval间隔执行一次
         """
         self._count += 1
 
         # 打印心跳次数
         if self._print_interval > 0:
-            if self._count % self._print_interval == 0:
+            if self._count % int(self._print_interval*200) == 0:
                 logger.info("do server heartbeat, count:", self._count, caller=self)
 
         # 设置下一次心跳回调
@@ -48,7 +48,7 @@ class HeartBeat(object):
         # 执行任务回调
         for task_id, task in self._tasks.items():
             interval = task["interval"]
-            if self._count % interval != 0:
+            if self._count % int(interval*200) != 0:
                 continue
             func = task["func"]
             args = task["args"]
@@ -59,7 +59,7 @@ class HeartBeat(object):
 
         # 广播服务进程心跳
         if self._broadcast_interval > 0:
-            if self._count % self._broadcast_interval == 0:
+            if self._count % int(self._broadcast_interval*200) == 0:
                 self.alive()
 
     def register(self, func, interval=1, *args, **kwargs):
