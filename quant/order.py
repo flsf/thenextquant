@@ -15,6 +15,8 @@ from quant.utils import tools
 ORDER_TYPE_LIMIT = "LIMIT"  # Limit order.
 ORDER_TYPE_MARKET = "MARKET"  # Market order.
 ORDER_TYPE_MAKER = "POST_ONLY"  # Market order.
+ORDER_TYPE_FOK = "FOK"  # FOK order.
+ORDER_TYPE_IOC = "IOC"  # IOC order.
 
 # Order direction.
 ORDER_ACTION_BUY = "BUY"  # Buy
