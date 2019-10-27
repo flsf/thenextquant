@@ -38,6 +38,7 @@ class MyStrategy:
         self.symbol = config.symbol
         self.contract_type = config.contract_type
         self.contract_code = config.contract_code
+        self.symbol_raw = config.symbol_raw
 
         self.buy_open_order_no = None  # 开仓做多订单号
         self.buy_open_quantity = "10"  # 开仓数量(USD)
@@ -62,7 +63,7 @@ class MyStrategy:
         self.trader = Trade(**cc)
 
         # 订阅行情
-        Market(const.MARKET_TYPE_ORDERBOOK, self.platform, self.symbol, self.on_event_orderbook_update)
+        Market(const.MARKET_TYPE_ORDERBOOK, self.platform, self.symbol_raw, self.on_event_orderbook_update)
 
         # 注册系统循环回调
         LoopRunTask.register(self.on_ticker, 1)  # 每隔1秒执行一次回调

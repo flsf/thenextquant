@@ -11,7 +11,7 @@
             "platform": "binance_future",
             "account": "abc123@gmail.com",
             "access_key": "ACCESS KEY",
-            "secret_key": "SECRET KEY",
+            "secret_key": "SECRET KEY"
         }
     ],
     "strategy": "my_test_strategy",

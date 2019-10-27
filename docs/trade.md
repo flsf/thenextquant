@@ -123,7 +123,7 @@ from quant.error import Error  # 引入错误模块
 # 初始化Trade模块成功或者失败，都将回调此函数
 # 如果成功，success将是True，error将是None
 # 如果失败，success将是False，error将携带失败信息
-async def on_event_init_success_callback(success: bool, error: Error):
+async def on_event_init_success_callback(success: bool, error: Error, **kwargs):
     print("initialize trade module status:", success, "error:", error)
 
 trader = Trade(strategy_name, platform, symbol, account=account, access_key=access_key, secret_key=secret_key,
