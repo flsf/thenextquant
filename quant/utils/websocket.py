@@ -8,10 +8,12 @@ Date:   2018/06/29
 """
 
 import json
+import time
 import traceback
 import aiohttp
 import asyncio
 
+from quant.const import *
 from quant.utils import logger
 from quant.config import config
 from quant.heartbeat import heartbeat
@@ -137,4 +139,11 @@ class Websocket:
             except ConnectionResetError:
                 traceback.print_exc()
                 await asyncio.get_event_loop().create_task(self._reconnect())
+        else:
+            now_ts = int(time.time()*1000)
+            if self._platform == FCOIN: 
+                ping_msg = {"cmd":"ping","args":[now_ts],"id":"fcoin"}
+                await self.send_json(ping_msg)
+                logger.debug("send ping message:", self._platform, ping_msg, caller=self)
+
 
