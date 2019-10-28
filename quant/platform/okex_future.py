@@ -259,7 +259,7 @@ class OKExFutureTrade(Websocket):
             object. `position_update_callback` is like `async def on_position_update_callback(order: Position): pass` and
             this callback function will be executed asynchronous when some position state updated.
         init_success_callback: You can use this param to specific a async callback function when you initializing Trade
-            object. `init_success_callback` is like `async def on_init_success_callback(success: bool, error: Error): pass`
+            object. `init_success_callback` is like `async def on_init_success_callback(success: bool, error: Error, **kwargs): pass`
             and this callback function will be executed asynchronous after Trade module object initialized successfully.
     """
 
