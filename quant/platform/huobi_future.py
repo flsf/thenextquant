@@ -662,7 +662,7 @@ class HuobiFutureTrade:
             if order["order_type"] == ORDER_TYPE_LIMIT:
                 order_price_type = "limit"
             elif order["order_type"] == ORDER_TYPE_MARKET:
-                order_price_type = "lightning"
+                order_price_type = "optimal_20"
             elif order["order_type"] == ORDER_TYPE_MAKER:
                 order_price_type = "post_only"
             elif order_price_type == ORDER_TYPE_FOK:
