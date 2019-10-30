@@ -20,13 +20,14 @@ import base64
 import urllib
 import hashlib
 import datetime
+import time
 from urllib.parse import urljoin
 
 from quant.error import Error
 from quant.order import Order
 from quant.utils import tools
 from quant.utils import logger
-from quant.tasks import SingleTask
+from quant.tasks import SingleTask, LoopRunTask
 from quant.position import Position
 from quant.const import HUOBI_FUTURE
 from quant.utils.web import Websocket
@@ -446,6 +447,8 @@ class HuobiFutureTrade:
         self._ws = Websocket(url, self.connected_callback, process_binary_callback=self.process_binary)
         self._ws.initialize()
 
+        LoopRunTask.register(self.send_heartbeat_msg, 5)
+
         self._assets = {}  # Asset detail, {"BTC": {"free": "1.1", "locked": "2.2", "total": "3.3"}, ... }.
         self._orders = {}  # Order objects, {"order_id": order, ...}.
         self._position = Position(self._platform, self._account, self._strategy, self._symbol + '/' + self._contract_type)
@@ -477,6 +480,13 @@ class HuobiFutureTrade:
     @property
     def rest_api(self):
         return self._rest_api
+
+    async def send_heartbeat_msg(self, *args, **kwargs):
+        data = {"pong": int(time.time()*1000)}
+        if not self._ws:
+            logger.error("Websocket connection not yeah!", caller=self)
+            return
+        await self._ws.send(data)
 
     async def connected_callback(self):
         """After connect to Websocket server successfully, send a auth message to server."""

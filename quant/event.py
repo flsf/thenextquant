@@ -458,6 +458,7 @@ class EventCenter:
             logger.warn("RabbitMQ not ready right now!", caller=self)
             return
         data = event.dumps()
+        logger.debug("Publish to RabbitMQ: ", event, caller=self)
         await self._channel.basic_publish(payload=data, exchange_name=event.exchange, routing_key=event.routing_key)
 
     async def connect(self, reconnect=False):

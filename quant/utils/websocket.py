@@ -139,11 +139,5 @@ class Websocket:
             except ConnectionResetError:
                 traceback.print_exc()
                 await asyncio.get_event_loop().create_task(self._reconnect())
-        else:
-            now_ts = int(time.time()*1000)
-            if self._platform == FCOIN: 
-                ping_msg = {"cmd":"ping","args":[now_ts],"id":"fcoin"}
-                await self.send_json(ping_msg)
-                logger.debug("send ping message:", self._platform, ping_msg, caller=self)
 
 
