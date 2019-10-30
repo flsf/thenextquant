@@ -458,8 +458,8 @@ class EventCenter:
             logger.warn("RabbitMQ not ready right now!", caller=self)
             return
         data = event.dumps()
-        logger.debug("Publish to RabbitMQ: ", event, caller=self)
         await self._channel.basic_publish(payload=data, exchange_name=event.exchange, routing_key=event.routing_key)
+        logger.debug("Publish to RabbitMQ: ", event, caller=self)
 
     async def connect(self, reconnect=False):
         """ Connect to RabbitMQ server and create default exchange.
