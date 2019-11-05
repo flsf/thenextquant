@@ -6,9 +6,9 @@ https://www.okex.me/docs/zh/
 
 NOTE: Only Cross Margin Mode is supported in Trade module currently. Please change Margin Mode to `Cross`, not `Fixed`!
 
-Author: HuangTao
-Date:   2019/01/19
-Email:  huangtao@ifclover.com
+Author: Qiaoxiaofeng
+Date:   2019/11/05
+Email:  andyjoe318@gmail.com
 """
 
 import time
@@ -25,6 +25,7 @@ from quant.utils import tools
 from quant.utils import logger
 from quant.tasks import SingleTask
 from quant.position import Position
+from quant.event import EventOrder, EventPosition
 from quant.const import OKEX_FUTURE
 from quant.utils.websocket import Websocket
 from quant.asset import Asset, AssetSubscribe
@@ -589,6 +590,10 @@ class OKExFutureTrade(Websocket):
 
         if status in [ORDER_STATUS_FAILED, ORDER_STATUS_CANCELED, ORDER_STATUS_FILLED]:
             self._orders.pop(order_no)
+        
+        # publish order
+        EventOrder(**order.__dict__).publish()
+        logger.info("symbol:", order.symbol, "order:", order, caller=self)
 
     def _update_position(self, position_info):
         """ Position update.
@@ -599,13 +604,26 @@ class OKExFutureTrade(Websocket):
         Returns:
             None.
         """
+        self._position.leverage = position_info["leverage"]
         self._position.long_quantity = int(position_info["long_qty"])
         self._position.long_avg_price = position_info["long_avg_cost"]
+        self._position.long_pnl_ratio = position_info["long_pnl_ratio"]
+        self._position.long_pnl_unreal = position_info["long_unrealised_pnl"]
+        self._position.long_pnl = position_info["long_settled_pnl"]
         self._position.short_quantity = int(position_info["short_qty"])
         self._position.short_avg_price = position_info["short_avg_cost"]
+        self._position.short_pnl_ratio = position_info["short_pnl_ratio"]
+        self._position.short_pnl_unreal = position_info["short_unrealised_pnl"]
+        self._position.short_pnl = position_info["short_settled_pnl"]
         self._position.liquid_price = position_info["liquidation_price"]
         self._position.utime = tools.utctime_str_to_mts(position_info["updated_at"])
+        self._position.long_pos_margin = position_info["long_margin"]
+        self._position.short_pos_margin = position_info['short_margin']
         SingleTask.run(self._position_update_callback, copy.copy(self.position))
+
+        # publish order
+        EventPosition(**self.position.__dict__).publish()
+        logger.info("symbol:", position.symbol, "position:", self.position, caller=self)
 
     async def on_event_asset_update(self, asset: Asset):
         """ Asset event data callback.

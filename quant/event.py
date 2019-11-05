@@ -280,6 +280,51 @@ class EventOrder(Event):
         order = Order(**self.data)
         return order
 
+class EventPosition(Event):
+    """ Position event.
+    
+    Attributes:
+        platform: Exchange platform name, e.g. bitmex.
+        symbol: Trading pair, e.g. BTC/
+    """
+    def __init__(self, platform=None, account=None, strategy=None, symbol=None, leverage=None,\
+        short_quantity=None, short_avg_price=None, short_pnl_ratio=None, short_pnl_unreal=None, \
+            short_pnl=None, long_quantity=None, long_avg_price=None, long_pnl_ratio=None,\
+                long_pnl_unreal=None, long_pnl=None, long_pos_margin=None, short_pos_margin=None, liquid_price=None, utime=None):
+        name = "EVENT_POSITION"
+        exchange = "Position"
+        routing_key = "{platform}.{account}.{symbol}".format(platform=platform, account=account, symbol=symbol)
+        queue = "{server_id}.{exchange}.{routing_key}".format(server_id=config.server_id,
+                                                              exchange=exchange,
+                                                              routing_key=routing_key)
+        data = {
+            "platform": platform,
+            "account": account, 
+            "strategy": strategy,
+            "symbol": symbol,
+            "leverage": leverage,
+            "short_quantity": short_quantity,
+            "short_avg_price": short_avg_price,
+            "short_pnl_ratio": short_pnl_ratio,
+            "short_pnl_unreal": short_pnl_unreal,
+            "short_pnl": short_pnl,
+            "long_quantity": long_quantity,
+            "long_avg_price": long_avg_price,
+            "long_pnl_ratio": long_pnl_ratio,
+            "long_pnl_unreal": long_pnl_unreal,
+            "long_pnl": long_pnl,
+            "long_pos_margin": long_pos_margin,
+            "short_pos_margin": short_pos_margin,
+            "liquid_price": liquid_price,
+            "utime": utime
+        }
+        super(EventPosition, self).__init__(name, exchange, queue, routing_key, data=data)
+
+    def parse(self):
+        """ Parse self._data to Order object.
+        """
+        position = Position(**self.data)
+        return position
 
 class EventKline(Event):
     """ Kline event.
@@ -312,6 +357,9 @@ class EventKline(Event):
         elif kline_type == const.MARKET_TYPE_KLINE_15M:
             name = "EVENT_KLINE_15MIN"
             exchange = "Kline.15min"
+        elif kline_type == const.MARKET_TYPE_KLINE_30M:
+            name = "EVENT_KLINE_30MIN"
+            exchange = "Kline.30min"
         else:
             logger.error("kline_type error! kline_type:", kline_type, caller=self)
             return
@@ -488,8 +536,8 @@ class EventCenter:
         logger.info("Rabbitmq initialize success!", caller=self)
 
         # Create default exchanges.
-        exchanges = ["Orderbook", "Trade", "Kline", "Kline.5min", "Kline.15min", "Config", "Heartbeat", "Asset",
-                     "Order", ]
+        exchanges = ["Orderbook", "Trade", "Kline", "Kline.5min", "Kline.15min", "Kline.30min", "Config", "Heartbeat", "Asset",
+                     "Order", "Position" ]
         for name in exchanges:
             await self._channel.exchange_declare(exchange_name=name, type_name="topic")
         logger.debug("create default exchanges success!", caller=self)

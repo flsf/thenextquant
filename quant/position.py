@@ -3,8 +3,8 @@
 """
 持仓对象
 
-Author: HuangTao
-Date:   2018/04/22
+Author: Qiaoxiaofeng
+Date:   2019/11/04
 """
 
 from quant.utils import tools
@@ -25,10 +25,19 @@ class Position:
         self.account = account
         self.strategy = strategy
         self.symbol = symbol
+        self.leverage = 0 # 杠杆倍数
         self.short_quantity = 0  # 空仓数量
         self.short_avg_price = 0  # 空仓持仓平均价格
+        self.short_pnl_ratio = 0 # 空仓收益率
+        self.short_pnl_unreal = 0 # 空仓未实现盈亏
+        self.short_pnl = 0 # 空仓已实现盈亏
         self.long_quantity = 0  # 多仓数量
         self.long_avg_price = 0  # 多仓持仓平均价格
+        self.long_pnl_ratio = 0 # 多仓收益率
+        self.long_pnl_unreal = 0 # 多仓未实现盈亏
+        self.long_pnl = 0 # 多仓已实现盈亏
+        self.long_pos_margin = 0 # 多仓持仓保证金 
+        self.short_pos_margin = 0 #  空仓持仓保证金 
         self.liquid_price = 0  # 预估爆仓价格
         self.utime = None  # 更新时间戳
 
@@ -54,3 +63,24 @@ class Position:
 
     def __repr__(self):
         return str(self)
+
+class PositionSubscribe:
+    """ Subscribe Position.
+
+    Args:
+        platform: Exchange platform name, e.g. binance/bitmex.
+        account: Trade account name, e.g. test@gmail.com.
+        strategy: Trade strategy name, e.g. huobi_test_strategy
+        callback: Asynchronous callback function for market data update.
+                e.g. async def on_event_account_update(asset: Asset):
+                        pass
+    """
+
+    def __init__(self, platform, account, symbol, callback):
+        """ Initialize. """
+        if platform == "#" or account == "#" or symbol == "#":
+            multi = True
+        else:
+            multi = False
+        from quant.event import EventPosition
+        EventPosition(platform, account, symbol).subscribe(callback, multi)
