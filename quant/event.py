@@ -27,7 +27,7 @@ from quant.heartbeat import Heartbeat
 
 
 __all__ = ("EventCenter", "EventConfig", "EventHeartbeat", "EventAsset", "EventOrder", "EventKline", "EventOrderbook",
-           "EventTrade")
+           "EventTrade", "EventPosition")
 
 
 class Event:
@@ -287,10 +287,11 @@ class EventPosition(Event):
         platform: Exchange platform name, e.g. bitmex.
         symbol: Trading pair, e.g. BTC/
     """
-    def __init__(self, platform=None, account=None, strategy=None, symbol=None, leverage=None,\
+    def __init__(self, platform=None, account=None, symbol=None, strategy=None, leverage=None,\
         short_quantity=None, short_avg_price=None, short_pnl_ratio=None, short_pnl_unreal=None, \
             short_pnl=None, long_quantity=None, long_avg_price=None, long_pnl_ratio=None,\
-                long_pnl_unreal=None, long_pnl=None, long_pos_margin=None, short_pos_margin=None, liquid_price=None, utime=None):
+                long_pnl_unreal=None, long_pnl=None, long_pos_margin=None, short_pos_margin=None, liquid_price=None, \
+                    maint_margin_ratio=None, utime=None):
         name = "EVENT_POSITION"
         exchange = "Position"
         routing_key = "{platform}.{account}.{symbol}".format(platform=platform, account=account, symbol=symbol)
@@ -316,6 +317,7 @@ class EventPosition(Event):
             "long_pos_margin": long_pos_margin,
             "short_pos_margin": short_pos_margin,
             "liquid_price": liquid_price,
+            "maint_margin_ratio": maint_margin_ratio,
             "utime": utime
         }
         super(EventPosition, self).__init__(name, exchange, queue, routing_key, data=data)

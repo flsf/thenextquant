@@ -25,6 +25,7 @@ from quant.utils import tools
 from quant.utils import logger
 from quant.tasks import SingleTask
 from quant.position import Position
+from quant.event import EventOrder, EventPosition
 from quant.const import OKEX_SWAP
 from quant.utils.websocket import Websocket
 from quant.asset import Asset, AssetSubscribe
@@ -429,7 +430,7 @@ class OKExSwapTrade(Websocket):
                 SingleTask.run(self._init_success_callback, False, e)
                 return
             self._update_position(position)
-
+            
             # Subscribe order channel and position channel.
             data = {
                 "op": "subscribe",
@@ -488,11 +489,14 @@ class OKExSwapTrade(Websocket):
                 trade_type = "2"
         quantity = abs(int(quantity))
         if order_type == ORDER_TYPE_LIMIT:
-            order_type_2 = 0
+            order_type_2 = "0"
+            match_price = "0"
         elif order_type == ORDER_TYPE_MARKET:
-            order_type_2 = 2
+            order_type_2 = "0"
+            match_price = "1"
         elif order_type == ORDER_TYPE_MAKER:
-            order_type_2 = 1
+            order_type_2 = "1"
+            match_price = "0"
         else:
             return None, "order type error"
         result, error = await self._rest_api.create_order(self._symbol, trade_type, price, quantity, match_price,
@@ -523,16 +527,19 @@ class OKExSwapTrade(Websocket):
                     trade_type = "2"
             quantity = abs(int(order["quantity"]))
             if order["order_type"] == ORDER_TYPE_LIMIT:
-                order_type_2 = 0
+                order_type_2 = "0"
+                match_price = "0"
             elif order["order_type"] == ORDER_TYPE_MARKET:
-                order_type_2 = 2
+                order_type_2 = "2"
+                match_price = "1"
             elif order["order_type"] == ORDER_TYPE_MAKER:
-                order_type_2 = 1
+                order_type_2 = "1"
+                match_price = "0"
             else:
                 return None, "order type error"
 
             orders_data.append({"order_type": str(order_type_2), "client_oid": "", "price": order["price"], "size": str(quantity), 
-                                "type": trade_type, "match_price": "0"})
+                                "type": trade_type, "match_price": match_price})
        
         result, error = await self._rest_api.create_orders(self._symbol, orders_data)
         if error:
@@ -658,6 +665,8 @@ class OKExSwapTrade(Websocket):
         if status in [ORDER_STATUS_FAILED, ORDER_STATUS_CANCELED, ORDER_STATUS_FILLED]:
             self._orders.pop(order_no)
 
+        logger.info("symbol:", order.symbol, "order:", order, caller=self)
+
     def _update_position(self, position_info):
         """ Position update.
 
@@ -671,17 +680,45 @@ class OKExSwapTrade(Websocket):
             self._position.update(0, 0, 0, 0, 0)
             return
         for item in position_info["holding"]:
+            usd_value_volume = 100 if self._symbol.startswith("BTC") else 10
             if item["side"] == "long":
                 self._position.liquid_price = item["liquidation_price"]
+                self._position.leverage = item["leverage"]
+                self._position.maint_margin_ratio = item["maint_margin_ratio"]
                 self._position.long_quantity = int(item["position"])
                 self._position.long_avg_price = item["avg_cost"]
+                if float(item["settlement_price"]) and float(item["last"]): 
+                    self._position.long_pnl_unreal = (usd_value_volume/float(item["settlement_price"]) - usd_value_volume/float(item["last"])) * int(item["position"])
+                else:
+                    self._position.long_pnl_unreal = 0
+                self._position.long_pnl = item["settled_pnl"]
+                self._position.long_pos_margin = item["margin"]
+                if float(item["margin"]):
+                    self._position.long_pnl_ratio = (float(item["settled_pnl"]) + float(self._position.long_pnl_unreal))/float(item["margin"])
+                else:
+                    self._position.long_avg_ratio = 0
             elif item["side"] == "short":
+                self._position.liquid_price = item["liquidation_price"]
+                self._position.leverage = item["leverage"]
+                self._position.maint_margin_ratio = item["maint_margin_ratio"]
                 self._position.short_quantity = int(item["position"])
                 self._position.short_avg_price = item["avg_cost"]
+                if float(item["settlement_price"]) and float(item["last"]): 
+                    self._position.short_pnl_unreal = -(usd_value_volume/float(item["settlement_price"]) - usd_value_volume/float(item["last"])) * int(item["position"])
+                else:
+                    self._position.short_pnl_unreal = 0
+                self._position.short_pnl = item["settled_pnl"]
+                self._position.short_pos_margin = item["margin"]
+                if float(item["margin"]):
+                    self._position.short_pnl_ratio = (float(item["settled_pnl"]) + float(self._position.short_pnl_unreal))/float(item["margin"])
+                else:
+                    self._position.short_pnl_ratio = 0
             else:
                 continue
             self._position.utime = tools.utctime_str_to_mts(item["timestamp"])
-        SingleTask.run(self._position_update_callback, copy.copy(self.position))
+        SingleTask.run(self._position_update_callback, copy.copy(self._position))
+
+        logger.info("position:", self._position, caller=self)
 
     async def on_event_asset_update(self, asset: Asset):
         """ Asset event data callback.

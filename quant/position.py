@@ -14,7 +14,10 @@ class Position:
     """ 持仓对象
     """
 
-    def __init__(self, platform=None, account=None, strategy=None, symbol=None):
+    def __init__(self, platform=None, account=None, strategy=None, symbol=None, leverage=None,\
+        short_quantity=None, short_avg_price=None, short_pnl_ratio=None, short_pnl_unreal=None,\
+           short_pnl=None, long_quantity=None, long_avg_price=None,  long_pnl_ratio=None, long_pnl_unreal=None,\
+             long_pnl=None, long_pos_margin=None,  short_pos_margin=None, liquid_price=None, maint_margin_ratio=None, utime=None ):
         """ 初始化持仓对象
         @param platform 交易平台
         @param account 账户
@@ -39,6 +42,7 @@ class Position:
         self.long_pos_margin = 0 # 多仓持仓保证金 
         self.short_pos_margin = 0 #  空仓持仓保证金 
         self.liquid_price = 0  # 预估爆仓价格
+        self.maint_margin_ratio = 0 #  保证金率
         self.utime = None  # 更新时间戳
 
     def update(self, short_quantity=0, short_avg_price=0, long_quantity=0, long_avg_price=0, liquid_price=0,

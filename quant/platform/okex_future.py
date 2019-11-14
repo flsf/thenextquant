@@ -623,7 +623,7 @@ class OKExFutureTrade(Websocket):
 
         # publish order
         EventPosition(**self.position.__dict__).publish()
-        logger.info("symbol:", position.symbol, "position:", self.position, caller=self)
+        logger.info("position:", self.position, caller=self)
 
     async def on_event_asset_update(self, asset: Asset):
         """ Asset event data callback.

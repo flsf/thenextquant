@@ -17,7 +17,7 @@ from quant.tasks import SingleTask
 from quant.order import ORDER_TYPE_LIMIT
 from quant.order import Order
 from quant.position import Position
-from quant.event import EventOrder
+from quant.event import EventOrder, EventPosition
 
 
 class Trade:
@@ -187,24 +187,7 @@ class Trade:
         Args:
             order: Order object.
         """
-        o = {
-            "platform": order.platform,
-            "account": order.account,
-            "strategy": order.strategy,
-            "order_no": order.order_no,
-            "action": order.action,
-            "order_type": order.order_type,
-            "symbol": order.symbol,
-            "price": order.price,
-            "quantity": order.quantity,
-            "remain": order.remain,
-            "status": order.status,
-            "avg_price": order.avg_price,
-            "trade_type": order.trade_type,
-            "ctime": order.ctime,
-            "utime": order.utime
-        }
-        EventOrder(**o).publish()
+        EventOrder(**order.__dict__).publish()
         if self._order_update_callback:
             SingleTask.run(self._order_update_callback, order)
 
@@ -214,6 +197,7 @@ class Trade:
         Args:
             position: Position object.
         """
+        EventPosition(**position.__dict__).publish()
         if self._position_update_callback:
             SingleTask.run(self._position_update_callback, position)
 
