@@ -685,32 +685,32 @@ class OKExSwapTrade(Websocket):
                 self._position.liquid_price = item["liquidation_price"]
                 self._position.leverage = item["leverage"]
                 self._position.maint_margin_ratio = item["maint_margin_ratio"]
-                self._position.long_quantity = int(item["position"])
+                self._position.long_quantity = int(item["avail_position"])
                 self._position.long_avg_price = item["avg_cost"]
                 if float(item["settlement_price"]) and float(item["last"]): 
-                    self._position.long_pnl_unreal = (usd_value_volume/float(item["settlement_price"]) - usd_value_volume/float(item["last"])) * int(item["position"])
+                    self._position.long_pnl_unreal = round((usd_value_volume/float(item["settlement_price"]) - usd_value_volume/float(item["last"])) * int(item["avail_position"]), 8)
                 else:
                     self._position.long_pnl_unreal = 0
                 self._position.long_pnl = item["settled_pnl"]
                 self._position.long_pos_margin = item["margin"]
                 if float(item["margin"]):
-                    self._position.long_pnl_ratio = (float(item["settled_pnl"]) + float(self._position.long_pnl_unreal))/float(item["margin"])
+                    self._position.long_pnl_ratio = round((float(item["settled_pnl"]) + float(self._position.long_pnl_unreal))/float(item["margin"]), 5)
                 else:
-                    self._position.long_avg_ratio = 0
+                    self._position.long_pnl_ratio = 0
             elif item["side"] == "short":
                 self._position.liquid_price = item["liquidation_price"]
                 self._position.leverage = item["leverage"]
                 self._position.maint_margin_ratio = item["maint_margin_ratio"]
-                self._position.short_quantity = int(item["position"])
+                self._position.short_quantity = int(item["avail_position"])
                 self._position.short_avg_price = item["avg_cost"]
                 if float(item["settlement_price"]) and float(item["last"]): 
-                    self._position.short_pnl_unreal = -(usd_value_volume/float(item["settlement_price"]) - usd_value_volume/float(item["last"])) * int(item["position"])
+                    self._position.short_pnl_unreal = -round((usd_value_volume/float(item["settlement_price"]) - usd_value_volume/float(item["last"])) * int(item["avail_position"]), 8)
                 else:
                     self._position.short_pnl_unreal = 0
                 self._position.short_pnl = item["settled_pnl"]
                 self._position.short_pos_margin = item["margin"]
                 if float(item["margin"]):
-                    self._position.short_pnl_ratio = (float(item["settled_pnl"]) + float(self._position.short_pnl_unreal))/float(item["margin"])
+                    self._position.short_pnl_ratio = round((float(item["settled_pnl"]) + float(self._position.short_pnl_unreal))/float(item["margin"]), 5)
                 else:
                     self._position.short_pnl_ratio = 0
             else:
