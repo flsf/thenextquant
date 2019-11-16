@@ -34,7 +34,7 @@ pip install thenextquant
 or
 
 ```text
-pip install -e git+https://github.com/TheNextQuant/thenextquant.git#egg=thenextquant
+pip install -e git+https://github.com/foonsun/thenextquant.git#egg=thenextquant
 ```
 
 or
