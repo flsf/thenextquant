@@ -80,6 +80,25 @@ class OKExSwapRestAPI:
         success, error = await self.request("GET", uri, auth=True)
         return success, error
 
+    async def set_leverage(self, instrument_id, leverage, side="3"):
+        """ Set leverage
+        Args:
+            instrument_id: instrument_id.
+            leverage: leverage.
+            side: cross mode default.
+        Returns:
+            success: success result.
+            error: error informations.
+        """
+        uri = "/api/swap/v3/accounts/{instrument_id}/leverage".format(instrument_id=instrument_id)
+        body = {
+            "leverage": leverage,
+            "side": side
+        }
+        success, error = await self.request("POST", uri, body=body, auth=True)
+        return success, error
+
+
     async def create_order(self, instrument_id, trade_type, price, size, match_price=0, order_type=0):
         """ Create an order.
         Args:
