@@ -27,9 +27,6 @@ def initLogger(log_level="DEBUG", log_path=None, logfile_name=None, clear=False,
     @param clear 初始化的时候，是否清理之前的日志文件
     @param backup_count 保存按天分割的日志文件个数，默认0为永久保存所有日志文件
     """
-    global initialized
-    if initialized:
-        return
     logger = logging.getLogger()
     logger.setLevel(log_level)
     if logfile_name:
@@ -47,7 +44,6 @@ def initLogger(log_level="DEBUG", log_path=None, logfile_name=None, clear=False,
     fmt = logging.Formatter(fmt=fmt_str, datefmt=None)
     handler.setFormatter(fmt)
     logger.addHandler(handler)
-    initialized = True
 
 
 def info(*args, **kwargs):
@@ -100,7 +96,6 @@ def _log(msg_header, *args, **kwargs):
         _log_msg += str(kwargs)
     return _log_msg
 
-
 def _log_msg_header(*args, **kwargs):
     """ 打印日志的message头
     @param kwargs["caller"] 调用的方法所属类对象
@@ -108,7 +103,8 @@ def _log_msg_header(*args, **kwargs):
             logger.xxx(... caller=cls) for @classmethod
     """
     cls_name = ""
-    func_name = sys._getframe().f_back.f_back.f_code.co_name
+    func_name = ""
+    #exec("func_name = sys._getframe().f_back.f_back.f_code.co_name")
     session_id = "-"
     try:
         _caller = kwargs.get("caller", None)
@@ -120,6 +116,8 @@ def _log_msg_header(*args, **kwargs):
     except:
         pass
     finally:
-        msg_header = "[{session_id}] [{cls_name}.{func_name}] ".format(cls_name=cls_name, func_name=func_name,
+        #msg_header = "[{session_id}] [{cls_name}.{func_name}] ".format(cls_name=cls_name, func_name=func_name,
+        #                                                               session_id=session_id)
+        msg_header = "[{session_id}] [{cls_name}] ".format(cls_name=cls_name,
                                                                        session_id=session_id)
         return msg_header, kwargs

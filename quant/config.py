@@ -44,6 +44,7 @@ class Config:
         self.markets = {}
         self.heartbeat = {}
         self.proxy = None
+        self.config_file = None
 
     def register_run_time_update(self):
         """Subscribe EventConfig and that can update config in run-time dynamically."""
@@ -57,6 +58,7 @@ class Config:
         Args:
             config_file: config json file.
         """
+        self.config_file = config_file
         configures = {}
         if config_file:
             try:
@@ -89,7 +91,17 @@ class Config:
         params["SERVER_ID"] = self.server_id
         params["RUN_TIME_UPDATE"] = self.run_time_update
         self._update(params)
+
+        try:
+            with open(self.config_file, 'w') as f:
+                json.dump(params, f)
+        except Exception as e:
+            print(e)
+            exit(0)
+
         logger.info("config update success!", caller=self)
+        from quant.quant import quant
+        quant.loop.stop()
 
     def _update(self, update_fields):
         """ Update config attributes.
